@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('password')->nullable();
             $table->bigInteger('otp')->nullable();
             $table->string('fcm_token')->nullable();
-            $table->string('device_id')->nullable();
+            $table->string('device_id')->unique();
             $table->string('app_version')->nullable();
             $table->string('google_id')->nullable();
             $table->string('facebook_id')->nullable();
