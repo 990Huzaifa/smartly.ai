@@ -30,7 +30,7 @@ class AuthController extends Controller
                 'name' => 'nullable',
                 'email' => 'nullable|email|unique:users,email',
                 'password' => 'nullable',
-                'device_id' => 'required',
+                'device_id' => 'required|unique:users,device_id',
                 'fcm_token' => 'nullable',
                 'app_version' => 'required|string',
             ], [
@@ -64,7 +64,9 @@ class AuthController extends Controller
             // $htmlContent = "<html><body><p>Hi " . $data->name . ",</p><p>This is your account verification code: <strong>" . $token . "</strong></p></body></html>";
             // $res = $brevo->sendMail('Account Verification Code', $data->email, $data->name, $htmlContent);
 
-             myMailSend($request->email, $user->first_name . $user->last_name ,'Email Verification', $token);
+            if($user->email){
+                myMailSend($request->email, $user->first_name . $user->last_name ,'Email Verification', $token);
+            }
             DB::commit();
             return response()->json(['message' => 'Your account has been created successfully'], 200);
         } catch (QueryException $e) {
