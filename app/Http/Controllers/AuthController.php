@@ -372,9 +372,8 @@ class AuthController extends Controller
             if($validator->fails())throw new Exception($validator->errors()->first(),400);
 
             $user = User::where('email', $request->email)->first();
-            if($user->roles()->first()->name != 'publisher') throw new Exception('Invalid user type');
             if (!$user) throw new Exception('User not found', 404);
-            $token = rand(100000, 999999);
+            $token = rand(1000, 9999);
             if($request->type == 'forget-password'){
                 PasswordResetToken::where('email', $request->email)->delete();
                 PasswordResetToken::insert([
