@@ -385,7 +385,6 @@ class AuthController extends Controller
                     $user->email,
                     $user->first_name . ' ' . $user->last_name,
                     'Verify Your Email',
-                    'We received a request to reset your password. Use the one-time password (OTP) below to verify your identity and create a new password.',
                     $token,
                 );
                 
@@ -399,7 +398,6 @@ class AuthController extends Controller
                     $user->email,
                     $user->first_name . ' ' . $user->last_name,
                     'Verify Your Email',
-                    'We received a request to verify your email address. Use the one-time password (OTP) below to complete your verification.',
                     $token,
                 );
                 
