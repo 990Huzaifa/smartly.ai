@@ -1,0 +1,57 @@
+name: 🚀 Laravel Deployment via FTP
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  web-deploy:
+    name: 🎉 Deploy Laravel Project via FTP
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout the code
+    - name: Get latest code
+      uses: actions/checkout@v2
+
+    # Install PHP and dependencies
+    # - name: Set up PHP
+    #   uses: shivammathur/setup-php@v2
+    #   with:
+    #     php-version: '8.2'
+
+    # - name: Install Composer Dependencies
+    #   run: composer install
+
+    # Clear Laravel Cache
+    # - name: Clear Laravel Cache
+    #   run: |
+    #     php artisan cache:clear
+    #     php artisan config:clear
+    #     php artisan route:clear
+    #     php artisan view:clear
+
+    # Deploy files via FTP
+    - name: 📂 Sync files
+      uses: SamKirkland/FTP-Deploy-Action@4.0.0
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        server-dir: /
+        exclude: |
+          .git*
+          node_modules/*
+          vendor/*
+          storage/*
+          resources/views/*
+          bootstrap/cache/*
+          public/*
+          tests/*
+          .env
+          .git-ftp-*
+          *.md
+          composer.json
+          package.json
+          composer.lock
