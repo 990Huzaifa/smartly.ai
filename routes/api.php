@@ -30,6 +30,7 @@ Route::get('/optimize-clear', function () {
 Route::post('signup', [AuthController::class, 'signup']);
 Route::post('signin', [AuthController::class, 'signin']);
 Route::post('social',[AuthController::class,'socialLoginSignup']);
+Route::put('verify/{token}/{email}',[AuthController::class,'verification']);
 Route::post('account-check',[AuthController::class,'accountCheck']);
 Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('reset-password', [AuthController::class, 'resetPassword']);
