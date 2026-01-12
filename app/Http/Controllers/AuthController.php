@@ -27,14 +27,13 @@ class AuthController extends Controller
         try {
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [
-                'name' => 'required',
+                'name' => 'nullable',
                 'email' => 'nullable|email|unique:users,email',
                 'password' => 'nullable',
                 'device_id' => 'required',
-                'fcm_token' => 'required',
+                'fcm_token' => 'nullable',
                 'app_version' => 'required|string',
             ], [
-                'name.required' => 'Name is required',
                 'email.email' => 'Invalid email format',
                 'email.unique' => 'Email already exists',
                 'device_id.required' => 'Device ID is required',
