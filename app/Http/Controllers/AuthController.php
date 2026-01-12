@@ -232,6 +232,7 @@ class AuthController extends Controller
 
             DB::beginTransaction();
             $user = User::where('email', $request->email)->first();
+            if($user->email_verified_at == null) throw new Exception('Email not verified', 400);
             if (!Hash::check($request->password, $user->password)) throw new Exception('Invalid email address or password', 400);
             $user->tokens()->delete();
             $token = $user->createToken('auth_token')->plainTextToken; 
