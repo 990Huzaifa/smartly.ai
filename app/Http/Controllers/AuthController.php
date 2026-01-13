@@ -27,10 +27,10 @@ class AuthController extends Controller
         try {
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [
-                'name' => 'nullable',
+                'name' => 'required',
                 'email' => 'nullable|email|unique:users,email',
                 'password' => 'nullable',
-                'device_id' => 'required|unique:users,device_id',
+                'device_id' => 'required',
                 'fcm_token' => 'nullable',
                 'app_version' => 'required|string',
             ], [
@@ -53,16 +53,6 @@ class AuthController extends Controller
                 'fcm_token' => $request->fcm_token,
                 'remember_token' => $token,
             ]);
-
-            // Mail::to($request->email)->send(new VerifyAccountMail([
-            //     'message' => 'Hi ' . $data->first_name . $data->last_name . ', This is your one time password',
-            //     'otp' => $token,
-            //     'is_url' => false
-            // ]));
-
-            // $brevo = new BrevoService();
-            // $htmlContent = "<html><body><p>Hi " . $data->name . ",</p><p>This is your account verification code: <strong>" . $token . "</strong></p></body></html>";
-            // $res = $brevo->sendMail('Account Verification Code', $data->email, $data->name, $htmlContent);
 
             if($user->email){
                 myMailSend($request->email, $user->first_name . $user->last_name ,'Email Verification', $token);
