@@ -9,8 +9,8 @@ function myMailSend($to, $name, $subject, $message, $link = null, $data = null){
         "message" => $message,
         "link"    => $link,
         "data"    => $data,
-        "logo"    => 'https://tempmail.techvince.com/assets/images/logo.png',
-        "from"    => 'TempMail Support',
+        "logo"    => 'https://smartly.techvince.com/assets/images/logo.png',
+        "from"    => 'Smartly Support',
     ];
 
     // Send using Guzzle HTTP client
