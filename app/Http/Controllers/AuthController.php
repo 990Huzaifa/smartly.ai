@@ -31,13 +31,11 @@ class AuthController extends Controller
                 'email' => 'nullable|email|unique:users,email',
                 'password' => 'nullable',
                 'device_id' => 'required',
-                'fcm_token' => 'nullable',
                 'app_version' => 'required|string',
             ], [
                 'email.email' => 'Invalid email format',
                 'email.unique' => 'Email already exists',
                 'device_id.required' => 'Device ID is required',
-                'fcm_token.required' => 'FCM Token is required',
             ]);
 
             if ($validator->fails()) throw new Exception($validator->errors()->first(), 400);
@@ -50,7 +48,6 @@ class AuthController extends Controller
                 'password' => Hash::make($request->password),
                 'status' => 'active',
                 'device_id' => $request->device_id,
-                'fcm_token' => $request->fcm_token,
                 'remember_token' => $token,
             ]);
 
@@ -230,7 +227,6 @@ class AuthController extends Controller
             $token = $user->createToken('auth_token')->plainTextToken; 
 
             $user->update([
-                'fcm_token' => $request->fcm_token,
                 'ip' => $request->ip(),
                 'app_version' => $request->app_version,
                 'last_login_at' => now(),

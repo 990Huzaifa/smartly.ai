@@ -24,12 +24,12 @@ class User extends Authenticatable
         'password',
         'otp',
         'fcm_token',
+        'ip',
         'device_id',
         'app_version',
         'google_id',
         'facebook_id',
         'apple_id',
-        'ip',
         'remember_token',
     ];
 
