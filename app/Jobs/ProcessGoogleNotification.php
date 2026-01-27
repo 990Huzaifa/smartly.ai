@@ -105,30 +105,14 @@ class ProcessGoogleNotification implements ShouldQueue
         // ============================
         
         $planConfig = [
-            'premium-monthly'      => ['duration' => 'monthly', "is_premium" => true],
-            'premium-yearly'       => ['duration' => 'yearly', "is_premium" => true],
-
-            'basic-credt-monthly'      => ['credits' => 10,  'type' => 'credits_monthly', 'duration' => 'monthly',"is_premium" => false],
-            'basic-credt-yearly'       => ['credits' => 10,  'type' => 'credits_annual',  'duration' => 'yearly',"is_premium" => false],
-            'unlimited-credt-monthly'  => ['credits' => 0,   'type' => 'unlimited',       'duration' => 'monthly',"is_premium" => false],
-            'unlimited-credt-yearly'   => ['credits' => 0,   'type' => 'unlimited',       'duration' => 'yearly',"is_premium" => false],
-            
-            'basic-cred-monthly'      => ['credits' => 10,  'type' => 'credits_monthly', 'duration' => 'monthly',"is_premium" => false],
-            'basic-cred-yearly'       => ['credits' => 10,  'type' => 'credits_annual',  'duration' => 'yearly',"is_premium" => false],
-            'unlimited-cred-monthly'  => ['credits' => 0,   'type' => 'unlimited',       'duration' => 'monthly',"is_premium" => false],
-            'unlimited-cred-yearly'   => ['credits' => 0,   'type' => 'unlimited',       'duration' => 'yearly',"is_premium" => false],
-
-
+            'pro-plan'      => ['duration' => 'monthly'],
+            'starter-plan'  => ['duration' => 'monthly'],
+            'ultra-plan'    => ['duration' => 'monthly'],
         ];
 
         $plan = $planConfig[$productId] ?? null;
         
-        if($plan['is_premium']){
-            $this->premium($type, $data, $productId, $plan);
-        }
-        else{
-            $this->subscription( $type, $data, $productId, $plan);
-        }
+        $this->subscription( $type, $data, $productId, $plan);
 
 
     }
@@ -288,71 +272,6 @@ class ProcessGoogleNotification implements ShouldQueue
 
     // handle both groups of plans
 
-    public function premium($type, $data, $productId, $plan){
-
-        $premium = Premium::where('transaction_id', $data['obfuscatedExternalAccountId'])->where('platform', 'google')->first();
-        switch ((int)$type) {
-            case 4: // SUBSCRIPTION_PURCHASED (New subscription) insert new subscription but first check if already exists
-                $existingPremium = Premium::where('user_id', $data['obfuscatedExternalAccountId'])
-                    ->where('platform', 'google')
-                    ->where('plan', $productId)
-                    ->first();
-                if(!$existingPremium && $plan){
-                    // Create new Premium
-                    $newPremium = Premium::create([
-                        'user_id'           => $data['obfuscatedExternalAccountId'],
-                        'plan'              => $productId,
-                        'expires_at'        => $data['expiry'],
-                        'renewal_period'    => $plan['duration'],
-                        'platform'          => 'google',
-                        'status'            => 'active',
-                    ]);
-
-                    $user = User::find($newPremium->user_id);
-                    if($user){
-                        $user->update([
-                            'is_premium' => true,
-                        ]);
-                    }
- 
-                }
-                break;
-            case 2: // SUBSCRIPTION_RENEWED
-                if($premium){
-                    $premium->update([
-                        'plan'              => $productId,
-                        'expires_at'        => $data['expiry'],
-                        'status'            => 'active',
-                        'canceled_at'      => null,
-                    ]);
-                }
-                break;
-            case 3: // SUBSCRIPTION_CANCELED
-                if($premium){
-                    $premium->update([
-                        'canceled_at' => Carbon::now(),
-                    ]);
-                }
-                break;
-            case 13: // SUBSCRIPTION_EXPIRED
-                if($premium){
-                    $premium->update([
-                        'status' => 'expired',
-                    ]);
-
-                    $user = User::find($premium->user_id);
-                    if($user){
-                        $user->update([
-                            'is_premium' => false,
-                        ]);
-                    }
-                }
-                break;
-            // ... include other types like RECOVERED, ON_HOLD, etc.
-        }
-        
-    }
-
     public function subscription($type, $data, $productId, $plan){
         // credit based plan handling logic
 
@@ -367,31 +286,11 @@ class ProcessGoogleNotification implements ShouldQueue
                     $newSubscription = Subscription::create([
                         'user_id'           => $data['obfuscatedExternalAccountId'],
                         'plan'              => $productId,
-                        'credits_per_month' => $plan['credits'],
-                        'released_credits'  => ($plan['type'] === 'credits_annual' ? 10 : 0),
-                        'total_credits'     => ($plan['type'] === 'credits_annual' ? 120 : 0),
-                        'starts_at'         => $data['start'],
                         'expires_at'        => $data['expiry'],
                         'renewal_period'    => $plan['duration'],
-                        'last_released_at'  => ($plan['type'] === 'credits_annual' ? Carbon::now() : null),
                         'platform'          => 'google',
                         'status'            => 'active',
                     ]);
-
-                    CreditsTransaction::create([
-                        'user_id'  => $newSubscription->user_id,
-                        'type'     => 'plan_release',
-                        'credits'  => $plan['credits'],
-                        'source'   => 'subscription',
-                        'ref' => 'purchased successfully',
-                    ]);
-
-                    $wallet = CreditsWallet::where('user_id', $newSubscription->user_id)->first();
-                    if($wallet){
-                        $wallet->paid_credits = $plan['credits'];
-                        $wallet->unlimited_active = $plan['type'] === 'unlimited' ? true : false;
-                        $wallet->save();    
-                    }
                 }
                 break;
             case 2: // SUBSCRIPTION_RENEWED
@@ -399,30 +298,11 @@ class ProcessGoogleNotification implements ShouldQueue
                 if($subscription){
                     $subscription->update([
                         'plan'              => $productId,
-                        'credits_per_month' => $plan['credits'],
-                        'released_credits'  => ($plan['type'] === 'credits_annual' ? 10 : 0),
-                        'total_credits'     => ($plan['type'] === 'credits_annual' ? 120 : 0),
                         'expires_at'        => $data['expiry'],
                         'renewal_period'    => $plan['duration'],
-                        'last_released_at'  =>($plan['type'] === 'credits_annual' ? Carbon::now() : null),
                         'status'            => 'active',
                         'canceled_at'      => null,
                     ]);
-
-                    CreditsTransaction::create([
-                        'user_id'  => $subscription->user_id,
-                        'type'     => 'plan_release',
-                        'credits'  => $plan['credits'],
-                        'source'   => 'subscription',
-                        'ref' => 'Renewal successfull',
-                    ]);
-
-                    $wallet = CreditsWallet::where('user_id', $subscription->user_id)->first();
-                    if($wallet){
-                        $wallet->paid_credits = $plan['credits'];
-                        $wallet->unlimited_active = $plan['type'] === 'unlimited' ? true : false;
-                        $wallet->save();
-                    }
                 }
                 break;
             case 3: // SUBSCRIPTION_CANCELED
@@ -440,17 +320,6 @@ class ProcessGoogleNotification implements ShouldQueue
                         'status' => 'expired',
                     ]);
 
-                    // update wallet
-                    $wallet = CreditsWallet::where('user_id', $subscription->user_id)->first();
-                    if($plan['type'] === 'unlimited'){
-                        $wallet->update([
-                            'unlimited_active' => false
-                        ]);
-                    }else{
-                        $wallet->update([
-                            'paid_credits' => 0
-                        ]);
-                    }
                 }
                 break;
             // ... include other types like RECOVERED, ON_HOLD, etc.
