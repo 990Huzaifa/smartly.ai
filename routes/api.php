@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\User\PaymentController;
 use App\Http\Controllers\WebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -42,7 +43,7 @@ Route::post('/webhook/google', [WebhookController::class, 'handleGoogle']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
-    
+    Route::post('google/verify-payment', [PaymentController::class, 'verifyGoogle']);
     Route::controller(ProfileController::class)->group(function () {
         Route::get('/profile', 'profile');
         Route::post('/profile', 'updateProfile');
