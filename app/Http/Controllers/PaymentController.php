@@ -319,7 +319,8 @@ class PaymentController extends Controller
                 'Authorization' => "Bearer {$accessToken}",
                 'Accept' => 'application/json',
             ])->get($url);
-
+            // log full response
+            Log::info($response);
             // 4. Response check karein
             if ($response->successful()) {
                 // Success! Response mein subscription details hain
