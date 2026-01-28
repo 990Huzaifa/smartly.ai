@@ -40,7 +40,7 @@ Route::post('resend-code', [AuthController::class, 'resendCode']);
 Route::post('/webhook/apple', [WebhookController::class, 'handleApple']);
 Route::post('/webhook/google', [WebhookController::class, 'handleGoogle']);
 
-
+Route::get('/test-google', [AuthController::class, 'testGAToken']);
 Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::post('google/verify-payment', [PaymentController::class, 'verifyGoogle']);

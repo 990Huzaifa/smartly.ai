@@ -446,5 +446,20 @@ class AuthController extends Controller
     }
 
 
+    public function testGAToken(): JsonResponse
+    {
+        try {
+            $googleAuthService = new \App\Services\GoogleAuthService();
+            $accessToken = $googleAuthService->getAccessToken();
+
+            if ($accessToken) {
+                return response()->json(['access_token' => $accessToken], 200);
+            } else {
+                throw new Exception($accessToken, 500);
+            }
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
+        }
+    }
 
 }
