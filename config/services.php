@@ -31,4 +31,7 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'google' => [
+        'android_package_name' => env('GOOGLE_ANDROID_PACKAGE_NAME'),
+    ],
 ];
