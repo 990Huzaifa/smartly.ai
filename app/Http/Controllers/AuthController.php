@@ -77,7 +77,6 @@ class AuthController extends Controller
                 'apple_id' => 'required_if:provider,apple',
                 'facebook_id' => 'required_if:provider,facebook',
                 'app_version' => 'required|string',
-                'fcm_token' => 'required|string',
             ],[
                 
             ]);
