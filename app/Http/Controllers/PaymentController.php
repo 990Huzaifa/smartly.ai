@@ -312,7 +312,6 @@ class PaymentController extends Controller
         // 2. Google Play Developer API ka Endpoint URL
         $url = "https://androidpublisher.googleapis.com/androidpublisher/v3/applications/{$packageName}/purchases/subscriptionsv2/tokens/{$token}";
         // here we log url for debug
-        Log::info("Google Verification URL: " . $url);
         try {
             // 3. GET Request bhejhe Access Token header ke saath
             $response = Http::withHeaders([
@@ -320,7 +319,6 @@ class PaymentController extends Controller
                 'Accept' => 'application/json',
             ])->get($url);
             // log full response
-            Log::info($response);
             // 4. Response check karein
             if ($response->successful()) {
                 // Success! Response mein subscription details hain
