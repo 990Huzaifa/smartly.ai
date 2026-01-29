@@ -310,7 +310,7 @@ class PaymentController extends Controller
         }
 
         // 2. Google Play Developer API ka Endpoint URL
-        $url = "https://androidpublisher.googleapis.com/androidpublisher/v3/applications/{$packageName}/purchases/subscriptionsv2/tokens/{$token}";
+        $url = "https://androidpublisher.googleapis.com/androidpublisher/v3/applications/{$packageName}/purchases/subscriptions/{$parent_id}/tokens/{$token}";
         // here we log url for debug
         try {
             // 3. GET Request bhejhe Access Token header ke saath
@@ -360,9 +360,9 @@ class PaymentController extends Controller
 
 
             $planConfig = [
-                'pro-plan'      => ['duration' => 'monthly'],
-                'starter-plan'  => ['duration' => 'monthly'],
-                'ultra-plan'    => ['duration' => 'monthly'],
+                'pro-plans'      => ['duration' => 'monthly'],
+                'starter-plans'  => ['duration' => 'monthly'],
+                'ultra-plans'    => ['duration' => 'monthly'],
             ];
 
             
