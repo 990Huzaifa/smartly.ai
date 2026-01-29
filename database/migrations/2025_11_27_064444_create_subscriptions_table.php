@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('plan', 255);
             $table->enum('platform', ['google', 'apple']);
             $table->enum('status', ['active', 'expired']);
+            $table->enum('renewal_period', ['monthly','yearly']);
             $table->longText('transaction_id')->nullable();
             $table->timestamp('expires_at')->nullable();
             $table->timestamp('canceled_at')->nullable();
