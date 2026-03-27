@@ -44,6 +44,7 @@ Route::get('/test-google', [AuthController::class, 'testGAToken']);
 Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::post('google/verify-payment', [PaymentController::class, 'verifyGoogle']);
+    Route::post('apple/verify-payment', [PaymentController::class, 'verifyapple']);
     Route::controller(ProfileController::class)->group(function () {
         Route::get('/profile', 'profile');
         Route::post('/profile', 'updateProfile');
