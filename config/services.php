@@ -34,4 +34,9 @@ return [
     'google' => [
         'android_package_name' => env('GOOGLE_ANDROID_PACKAGE_NAME'),
     ],
+    'apple' => [
+        'iap_shared_secret' => env('APPLE_IAP_SHARED_SECRET'),
+        'issuer_id' => env('APPLE_APP_STORE_ISSUER_ID'),
+        'key_id' => env('APPLE_APP_STORE_KEY_ID'),
+    ],
 ];
