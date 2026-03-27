@@ -13,7 +13,7 @@ class AppStoreConnectAuth
         
         $keyId = config('services.apple.key_id');          // App Store Connect se mila
         $issuerId = config('services.apple.issuer_id');    // App Store Connect se mila
-        $privateKeyPath = storage_path('app/apple/SubscriptionKey_J66JWWB42D.p8'); 
+        $privateKeyPath = storage_path('app/apple/SubscriptionKey_72Z84C7D9X.p8'); 
         // 1. Private Key ko .p8 file se read karein
         $privateKey = file_get_contents($privateKeyPath);
         
