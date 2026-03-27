@@ -48,7 +48,7 @@ class AppStoreConnectAuth
             // 'aud': Audience (App Store Connect API ke liye fixed value)
             'aud' => 'appstoreconnect-v1',
             
-            'bid' => 'com.racklineai.assistant',
+            'bid' => 'com.naftech.multiai2',
             // 'bid': Bundle ID (Agar sirf ek app ke liye use kar rahe hain)
             // Note: App Store Server API ke liye 'bid' zaroori nahi, lekin App Store Connect API ke liye hota hai. 
             // Agar App Store Server API ke liye use kar rahe hain to isko hata sakte hain ya 'scope' use karein.

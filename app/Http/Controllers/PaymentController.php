@@ -21,275 +21,175 @@ use App\Services\AppStoreConnectAuth;
 
 class PaymentController extends Controller
 {
-    // public function verifyapple(Request $request): JsonResponse
-    // {
-    //     try{
-    //         $user = Auth::user();
+    public function verifyapple(Request $request): JsonResponse
+    {
+        try{
+            $user = Auth::user();
 
-    //         $validator = Validator::make($request->all(), [
-    //             'receipt' => 'required|string',
-    //             'product_id' => 'required|string'
-    //         ]);
-    //         if ($validator->fails()) {
-    //             return response()->json(['error' => $validator->errors()->first()], 422);
-    //         }
+            $validator = Validator::make($request->all(), [
+                'receipt' => 'required|string',
+                'product_id' => 'required|string'
+            ]);
+            if ($validator->fails()) {
+                return response()->json(['error' => $validator->errors()->first()], 422);
+            }
             
-    //         $receiptData = $request->input('receipt');
-    //         // $datar = $this->getData($receiptData);
-    //         $transaction_id = $this->gettId($receiptData);
-    //         // verify from server
-    //         $res = $this->verifyFromApple($transaction_id);
-    //         if(!$res) return response()->json(['error' => 'Invalid receipt'], 400);
-    //         $latestReceipt = $res;
-    //         // check subscription here..
+            $receiptData = $request->input('receipt');
+            // $datar = $this->getData($receiptData);
+            $transaction_id = $this->gettId($receiptData);
+            // verify from server
+            $res = $this->verifyFromApple($transaction_id);
+            if(!$res) return response()->json(['error' => 'Invalid receipt'], 400);
+            $latestReceipt = $res;
+            // check subscription here..
 
-    //         $checkSub = $user->subscriptions()->where('platform', 'apple')->orderBy('updated_at', 'desc')->first();
-    //         $caseData = 'new';
-    //         if ($checkSub) {
-    //             $caseData = 'upgrade';
-    //         }
-    //         // return response()->json($caseData);
+            $checkSub = $user->subscriptions()->where('platform', 'apple')->orderBy('updated_at', 'desc')->first();
+            $caseData = 'new';
+            if ($checkSub) {
+                $caseData = 'upgrade';
+            }
+            // return response()->json($caseData);
 
-    //         // ============================
-    //         // 🎯 PLAN MAPPING
-    //         // ============================
-    //         $planConfig = [
-    //             'basic_cred_monthly'      => ['credits' => 10,  'type' => 'credits_monthly', 'duration' => 'monthly'],
-    //             'basic_cred_yearly'       => ['credits' => 10,  'type' => 'credits_annual',  'duration' => 'yearly'],
-    //             'unlimited_cred_monthly'  => ['credits' => 0,   'type' => 'unlimited',       'duration' => 'monthly'],
-    //             'unlimited_cred_yearly'   => ['credits' => 0,   'type' => 'unlimited',       'duration' => 'yearly'],
-    //         ];
+            // ============================
+            // 🎯 PLAN MAPPING
+            // ============================
+            $planConfig = [
+                'starter_plans'      => ['duration' => 'monthly'],
+                'pro_plans'       => ['duration' => 'monthly'],
+                'ultra_plans'  => ['duration' => 'monthly'],
+            ];
 
-    //         $productId = $latestReceipt['productId'];
-    //         $plan = $planConfig[$productId] ?? null;
-    //         if (!$plan) {
-    //             return response()->json(['error' => 'Unknown product ID'], 400);
-    //         }
+            $productId = $latestReceipt['productId'];
+            $plan = $planConfig[$productId] ?? null;
+            if (!$plan) {
+                return response()->json(['error' => 'Unknown product ID'], 400);
+            }
 
-    //         $expiresAt = $latestReceipt['expireDateFormatted'];
-    //         // transaction
-    //         if($caseData == 'new'){
-    //             DB::transaction(function () use ($user, $plan, $productId, $expiresAt, $latestReceipt) {
-    //                 // 🔹 Get or Create Wallet
-    //                 $wallet = $user->wallet;
+            $expiresAt = $latestReceipt['expireDateFormatted'];
+            // transaction
+            if($caseData == 'new'){
+                DB::transaction(function () use ($user, $plan, $productId, $expiresAt, $latestReceipt) {
+                    Subscription::Create([
+                        'user_id'           => $user->id,
+                        'plan'              => $productId,
+                        'renewal_period'    => $plan['duration'],
+                        'transaction_id'    => $latestReceipt['transactionId'],
+                        'status'            => 'active',
+                        'expires_at'        => $expiresAt,
+                    ]);
 
-    //                 // 🔹 Handle Credit-based Plans
-    //                 if (in_array($plan['type'], ['credits_monthly', 'credits_annual'])) {
+                });
+            }
+            if($caseData == 'upgrade'){
+                DB::transaction(function () use ($user, $plan, $productId, $expiresAt, $latestReceipt) {
+                    $user->subscriptions()->where('transaction_id', $latestReceipt['originalTransactionId'])->update([
+                        'plan'              => $productId,
+                        'renewal_period'    => $plan['duration'],
+                        'status'            => 'active',
+                        'expires_at'        => $expiresAt,
+                    ]);
+                });
+            }
 
-    //                     $wallet->unlimited_active = false;
-    //                     $wallet->paid_credits = $plan['credits']; // Add 10 now (monthly release)
-    //                     $wallet->save();
+            return response()->json(['message' => 'Payment verified successfully'], 200);
+        }catch(QueryException $e){
+            return response()->json(['error' => $e->getMessage()], 500);
+        }catch(Exception $e){
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 
-    //                     CreditsTransaction::create([
-    //                         'user_id'  => $user->id,
-    //                         'type'     => 'plan_release',
-    //                         'credits'  => $plan['credits'],
-    //                         'source'   => 'subscription',
-    //                         'ref' => 'purchased successfully',
-    //                     ]);
+    // apple verify functions start
 
-    //                     Subscription::Create([
-    //                             'user_id'           => $user->id,
-    //                             'plan'              => $productId,
-    //                             'credits_per_month' => $plan['credits'],
-    //                             'released_credits'  => ($plan['type'] === 'credits_annual' ? 10 : 0),
-    //                             'total_credits'     => ($plan['type'] === 'credits_annual' ? 120 : 0),
-    //                             'renewal_period'    => $plan['duration'],
-    //                             'transaction_id'    => $latestReceipt['transactionId'],
-    //                             'status'            => 'active',
-    //                             'expires_at'        => $expiresAt,
-    //                             'last_released_at'  => ($plan['type'] === 'credits_annual' ? Carbon::now() : null),
-    //                     ]);
+    private function verifyFromApple($t_id)
+    {
+        $authService = new AppStoreConnectAuth();
+        $jwtToken = $authService->generateToken();
 
-    //                 } 
-    //                 // 🔹 Handle Unlimited Plans
-    //                 else if ($plan['type'] === 'unlimited') {
+        $productionUrl = 'https://api.storekit.itunes.apple.com/inApps/v1/transactions/'.$t_id;
+        $sandboxUrl = 'https://api.storekit-sandbox.itunes.apple.com/inApps/v1/transactions/'.$t_id;
 
-    //                     $wallet->unlimited_active = true;
-    //                     $wallet->save();
+        // hit post request to production
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer '.$jwtToken,
+        ])->get($productionUrl);
 
-    //                     Subscription::Create([
-    //                             'user_id'           => $user->id,
-    //                             'plan'              => $productId,
-    //                             'credits_per_month' => 0,
-    //                             'released_credits'  => 0,
-    //                             'total_credits'     => 0,
-    //                             'status'            => 'active',
-    //                             'expires_at'        => $expiresAt,
-    //                             'renewal_period'    => $plan['duration'],
-    //                             'transaction_id'    => $latestReceipt['transactionId'],
-    //                         ]);
-
-    //                     CreditsTransaction::create([
-    //                         'user_id'  => $user->id,
-    //                         'type'     => 'plan_release',
-    //                         'credits'  => 0,
-    //                         'source'   => 'subscription',
-    //                         'ref' => 'purchased successfully',
-    //                     ]);
-    //                 }
-    //             });
-    //         }
-    //         if($caseData == 'upgrade'){
-    //             DB::transaction(function () use ($user, $plan, $productId, $expiresAt, $latestReceipt) {
-
-    //                 // 🔹 Get or Create Wallet
-    //                 $wallet = $user->wallet;
-
-    //                 // 🔹 Handle Credit-based Plans
-    //                 if (in_array($plan['type'], ['credits_monthly', 'credits_annual'])) {
-
-    //                     $wallet->unlimited_active = false;
-    //                     $wallet->paid_credits = $plan['credits']; // Add 10 now (monthly release)
-    //                     $wallet->save();
-
-    //                     CreditsTransaction::create([
-    //                         'user_id'  => $user->id,
-    //                         'type'     => 'plan_release',
-    //                         'credits'  => $plan['credits'],
-    //                         'source'   => 'subscription',
-    //                         'ref' => 'upgraded successfully',
-    //                     ]);
-
-    //                     $user->subscriptions()->where('transaction_id', $latestReceipt['originalTransactionId'])->update([
-    //                             'plan'              => $productId,
-    //                             'credits_per_month' => $plan['credits'],
-    //                             'released_credits'  => ($plan['type'] === 'credits_annual' ? 10 : 0),
-    //                             'total_credits'     => ($plan['type'] === 'credits_annual' ? 120 : 0),
-    //                             'renewal_period'    => $plan['duration'],
-    //                             'status'            => 'active',
-    //                             'expires_at'        => $expiresAt,
-    //                             'last_released_at'  => ($plan['type'] === 'credits_annual' ? Carbon::now() : null),
-    //                     ]);
-
-    //                 } 
-    //                 // 🔹 Handle Unlimited Plans
-    //                 else if ($plan['type'] === 'unlimited') {
-
-    //                     $wallet->unlimited_active = true;
-    //                     $wallet->save();
-
-    //                     $user->subscriptions()->where('transaction_id', $latestReceipt['originalTransactionId'])->update([
-    //                             'plan'           => $productId,
-    //                             'credits_per_month' => 0,
-    //                             'released_credits' => 0,
-    //                             'total_credits' => 0,
-    //                             'status'         => 'active',
-    //                             'expires_at'     => $expiresAt,
-    //                             'renewal_period' => $plan['duration'],
-    //                         ]
-    //                     );
-
-    //                     CreditsTransaction::create([
-    //                         'user_id'  => $user->id,
-    //                         'type'     => 'plan_release',
-    //                         'credits'  => 0,
-    //                         'source'   => 'subscription',
-    //                         'ref' => 'upgraded successfully',
-    //                     ]);
-    //                 }
-    //             });
-    //         }
-
-    //         return response()->json(['message' => 'Payment verified successfully'], 200);
-    //     }catch(QueryException $e){
-    //         return response()->json(['error' => $e->getMessage()], 500);
-    //     }catch(Exception $e){
-    //         return response()->json(['error' => $e->getMessage()], 500);
-    //     }
-    // }
-
-    // // apple verify functions start
-
-    // private function verifyFromApple($t_id)
-    // {
-    //     $authService = new AppStoreConnectAuth();
-    //     $jwtToken = $authService->generateToken();
-
-    //     $productionUrl = 'https://api.storekit.itunes.apple.com/inApps/v1/transactions/'.$t_id;
-    //     $sandboxUrl = 'https://api.storekit-sandbox.itunes.apple.com/inApps/v1/transactions/'.$t_id;
-
-    //     // hit post request to production
-    //     $response = Http::withHeaders([
-    //         'Authorization' => 'Bearer '.$jwtToken,
-    //     ])->get($productionUrl);
-
-    //     if ($response->failed()) {
-    //         // hit post request to sandbox
-    //         $response = Http::withHeaders([
-    //             'Authorization' => 'Bearer '.$jwtToken,
-    //         ])->get($sandboxUrl);
-    //     }
+        if ($response->failed()) {
+            // hit post request to sandbox
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer '.$jwtToken,
+            ])->get($sandboxUrl);
+        }
         
-    //     // here we compare the transaction id from the response with the transaction id from the request
-    //     if ($response->successful()) {
-    //         $data = $response->json();
-    //         $transaction_id = $this->gettId($data['signedTransactionInfo']);
-    //         if ($transaction_id == $t_id) {
-    //             $data = $this->getData($data['signedTransactionInfo']);
-    //             return $data;
-    //         }
-    //     }
-    // }
+        // here we compare the transaction id from the response with the transaction id from the request
+        if ($response->successful()) {
+            $data = $response->json();
+            $transaction_id = $this->gettId($data['signedTransactionInfo']);
+            if ($transaction_id == $t_id) {
+                $data = $this->getData($data['signedTransactionInfo']);
+                return $data;
+            }
+        }
+    }
 
-    // private function gettId($data)
-    // {
-    //     $pl = explode(".", $data);
-    //     $newdata = json_decode(base64_decode($pl[1]), true);
-    //     $transaction_id = $newdata['transactionId']; 
-    //     return $transaction_id;
-    // }
+    private function gettId($data)
+    {
+        $pl = explode(".", $data);
+        $newdata = json_decode(base64_decode($pl[1]), true);
+        $transaction_id = $newdata['transactionId']; 
+        return $transaction_id;
+    }
 
-    // private function getOgtId($data)
-    // {
-    //     $pl = explode(".", $data);
-    //     $newdata = json_decode(base64_decode($pl[1]), true);
-    //     $transaction_id = $newdata['originalTransactionId']; 
-    //     return $transaction_id;
-    // }
+    private function getOgtId($data)
+    {
+        $pl = explode(".", $data);
+        $newdata = json_decode(base64_decode($pl[1]), true);
+        $transaction_id = $newdata['originalTransactionId']; 
+        return $transaction_id;
+    }
 
-    // private function getData($data)
-    // {
-    //     $pl = explode(".", $data);
-    //     $newdata = json_decode(base64_decode($pl[1]), true);
+    private function getData($data)
+    {
+        $pl = explode(".", $data);
+        $newdata = json_decode(base64_decode($pl[1]), true);
 
-    //     if (isset($newdata['purchaseDate'])) {
-    //         $timestampInSeconds = floor($newdata['purchaseDate'] / 1000);
+        if (isset($newdata['purchaseDate'])) {
+            $timestampInSeconds = floor($newdata['purchaseDate'] / 1000);
             
-    //         // Purchase Date ko Carbon se format karna
-    //         $newdata['purchaseDateFormatted'] = Carbon::createFromTimestamp($timestampInSeconds)->toDateTimeString();
-    //         // Agar aap chahein to original millisecond value ko hata bhi sakte hain
-    //         // unset($newdata['purchaseDate']); 
-    //     }
+            // Purchase Date ko Carbon se format karna
+            $newdata['purchaseDateFormatted'] = Carbon::createFromTimestamp($timestampInSeconds)->toDateTimeString();
+            // Agar aap chahein to original millisecond value ko hata bhi sakte hain
+            // unset($newdata['purchaseDate']); 
+        }
 
-    //     if (isset($newdata['originalPurchaseDate'])) {
-    //         $timestampInSeconds = floor($newdata['originalPurchaseDate'] / 1000);
+        if (isset($newdata['originalPurchaseDate'])) {
+            $timestampInSeconds = floor($newdata['originalPurchaseDate'] / 1000);
             
-    //         // Original Purchase Date ko format karna
-    //         $newdata['originalPurchaseDateFormatted'] = Carbon::createFromTimestamp($timestampInSeconds)->toDateTimeString();
-    //         // unset($newdata['originalPurchaseDate']);
-    //     }
+            // Original Purchase Date ko format karna
+            $newdata['originalPurchaseDateFormatted'] = Carbon::createFromTimestamp($timestampInSeconds)->toDateTimeString();
+            // unset($newdata['originalPurchaseDate']);
+        }
 
-    //     if (isset($newdata['price']) && isset($newdata['currency'])) {
+        if (isset($newdata['price']) && isset($newdata['currency'])) {
             
-    //         // Step A: Micro-units ko asal price mein tabdeel karna (Divide by 1,000,000)
-    //         $actualPrice = (float) $newdata['price'] / 1000.0; 
+            // Step A: Micro-units ko asal price mein tabdeel karna (Divide by 1,000,000)
+            $actualPrice = (float) $newdata['price'] / 1000.0; 
             
-    //         // Step B: Asal price ko ek nayi field mein save karna
-    //         $newdata['priceActual'] = $actualPrice;
+            // Step B: Asal price ko ek nayi field mein save karna
+            $newdata['priceActual'] = $actualPrice;
 
-    //     }
-    //     if (isset($newdata['expiresDate'])) {
-    //         $timestampInSeconds = floor($newdata['expiresDate'] / 1000);
+        }
+        if (isset($newdata['expiresDate'])) {
+            $timestampInSeconds = floor($newdata['expiresDate'] / 1000);
             
-    //         // Expire Date ko Carbon se format karna
-    //         $newdata['expireDateFormatted'] = Carbon::createFromTimestamp($timestampInSeconds)->toDateTimeString();
-    //         // Agar aap chahein to original millisecond value ko hata bhi sakte hain
-    //         // unset($newdata['ExpireDate']); 
-    //     }
+            // Expire Date ko Carbon se format karna
+            $newdata['expireDateFormatted'] = Carbon::createFromTimestamp($timestampInSeconds)->toDateTimeString();
+            // Agar aap chahein to original millisecond value ko hata bhi sakte hain
+            // unset($newdata['ExpireDate']); 
+        }
 
-    //     return $newdata;
-    // }
+        return $newdata;
+    }
 
 
     // apple verify functions end
