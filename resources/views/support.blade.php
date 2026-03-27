@@ -275,13 +275,13 @@
 
                 <div class="info-item">
                     <h3>Email</h3>
-                    <p><a href="mailto:minhaj.ali.khan909@gmail.com">minhaj.ali.khan909@gmail.com</a></p>
+                    <p><a href="nafeeshahmedsherazi@gmail.com">nafeeshahmedsherazi@gmail.com</a></p>
                 </div>
 
-                <div class="info-item">
+                <!-- <div class="info-item">
                     <h3>Phone</h3>
                     <p><a href="tel:+923322660835">+92 332 2660835</a></p>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>
