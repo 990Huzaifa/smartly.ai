@@ -2,9 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Models\CreditsTransaction;
-use App\Models\CreditsWallet;
-use App\Models\Premium;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Services\AppStoreConnectAuth;
