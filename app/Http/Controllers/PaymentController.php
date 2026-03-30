@@ -260,9 +260,8 @@ class PaymentController extends Controller
 
 
             $planConfig = [
-                'pro-plans'      => ['duration' => 'monthly'],
-                'starter-plans'  => ['duration' => 'monthly'],
-                'ultra-plans'    => ['duration' => 'monthly'],
+                'premium-plan'      => ['duration' => 'monthly'],
+                'ultra-premium-plan'      => ['duration' => 'monthly'],
             ];
 
             

@@ -105,9 +105,8 @@ class ProcessGoogleNotification implements ShouldQueue
         // ============================
         
         $planConfig = [
-            'pro-plan'      => ['duration' => 'monthly'],
-            'starter-plan'  => ['duration' => 'monthly'],
-            'ultra-plan'    => ['duration' => 'monthly'],
+            'premium-plan'      => ['duration' => 'monthly'],
+            'ultra-premium-plan'      => ['duration' => 'monthly'],
         ];
 
         $plan = $planConfig[$productId] ?? null;
