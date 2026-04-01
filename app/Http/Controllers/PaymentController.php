@@ -240,7 +240,7 @@ class PaymentController extends Controller
 
     // new functions here
 
-    public function verifygoogle(Request $request): JsonResponse
+    public function verifygoogle(Request $request): JsonResponse 
     {
         try{
             $user = Auth::user();
@@ -260,8 +260,8 @@ class PaymentController extends Controller
 
 
             $planConfig = [
-                'starter-plans'      => ['duration' => 'monthly'],
                 'pro-plans'       => ['duration' => 'monthly'],
+                'starter-plans'      => ['duration' => 'monthly'],
                 'ultra-plans'  => ['duration' => 'monthly'],
             ];
 
