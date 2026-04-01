@@ -114,7 +114,6 @@ class ProcessGoogleNotification implements ShouldQueue
         
         $this->subscription( $type, $data, $productId, $plan);
 
-
     }
 
     protected function handleVoidedPurchaseNotification(array $notification)
