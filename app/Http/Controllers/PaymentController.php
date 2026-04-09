@@ -123,16 +123,16 @@ class PaymentController extends Controller
             ])->get($sandboxUrl);
         }
         
-        Log::info('Apple verify status', [
-            "JWT Token" => $jwtToken,
-            'transaction_id' => $t_id,
-            'status' => $response->status(),
-            'successful' => $response->successful(),
-            'failed' => $response->failed(),
-            'headers' => $response->headers(),
-            'raw_body' => $response->body(),
-            'json' => $response->json(),
-        ]);
+        // Log::info('Apple verify status', [
+        //     "JWT Token" => $jwtToken,
+        //     'transaction_id' => $t_id,
+        //     'status' => $response->status(),
+        //     'successful' => $response->successful(),
+        //     'failed' => $response->failed(),
+        //     'headers' => $response->headers(),
+        //     'raw_body' => $response->body(),
+        //     'json' => $response->json(),
+        // ]);
         // here we compare the transaction id from the response with the transaction id from the request
         if ($response->successful()) {
             $data = $response->json();
