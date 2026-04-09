@@ -27,23 +27,25 @@ class PaymentController extends Controller
             $user = Auth::user();
 
             $validator = Validator::make($request->all(), [
-                'receipt' => 'required|string',
+                'transaction_id' => 'required|string',
                 'product_id' => 'required|string'
+            ],[
+                'transaction_id.required' => 'The transaction_id field is required.',
+                'product_id.required' => 'The product_id field is required.',
             ]);
             if ($validator->fails()) {
                 return response()->json(['error' => $validator->errors()->first()], 422);
             }
             
-            $receiptData = $request->input('receipt');
-            // $datar = $this->getData($receiptData);
-            $transaction_id = $this->gettId($receiptData);
+            // $receiptData = ;
+            $transaction_id = $request->input('transaction_id');
             // verify from server
             $res = $this->verifyFromApple($transaction_id);
             if(!$res) return response()->json(['error' => 'Invalid receipt'], 400);
             $latestReceipt = $res;
             // check subscription here..
 
-            $checkSub = $user->subscriptions()->where('platform', 'apple')->orderBy('updated_at', 'desc')->first();
+            $checkSub = $user->subscription()->where('platform', 'apple')->orderBy('updated_at', 'desc')->first();
             $caseData = 'new';
             if ($checkSub) {
                 $caseData = 'upgrade';
@@ -82,7 +84,7 @@ class PaymentController extends Controller
             }
             if($caseData == 'upgrade'){
                 DB::transaction(function () use ($user, $plan, $productId, $expiresAt, $latestReceipt) {
-                    $user->subscriptions()->where('transaction_id', $latestReceipt['originalTransactionId'])->update([
+                    $user->subscription()->where('transaction_id', $latestReceipt['originalTransactionId'])->update([
                         'plan'              => $productId,
                         'renewal_period'    => $plan['duration'],
                         'status'            => 'active',
