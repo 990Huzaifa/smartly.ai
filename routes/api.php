@@ -40,6 +40,8 @@ Route::post('resend-code', [AuthController::class, 'resendCode']);
 Route::post('/webhook/apple', [WebhookController::class, 'handleApple']);
 Route::post('/webhook/google', [WebhookController::class, 'handleGoogle']);
 
+Route::get('request-jwt',[AuthController::class,'jwt']);
+
 Route::get('/test-google', [AuthController::class, 'testGAToken']);
 Route::middleware(['auth:sanctum'])->group(function () {
 

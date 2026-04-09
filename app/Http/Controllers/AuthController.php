@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\VerifyAccountMail;
+use App\Services\AppStoreConnectAuth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -459,6 +460,12 @@ class AuthController extends Controller
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
         }
+    }
+
+    public function jwt(){
+        $service = new AppStoreConnectAuth();
+        $jwt = $service->generateToken();
+        return response()->json($jwt);
     }
 
 }
