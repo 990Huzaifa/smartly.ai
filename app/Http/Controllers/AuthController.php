@@ -93,8 +93,8 @@ class AuthController extends Controller
                 $user = User::where('facebook_id', $request->facebook_id)->orWhere('email', $request->email)->first();
             }
 
-            if($user && $user->is_deleted) throw new Exception('Your account has been deleted', 403);
             
+
             $already_registered = false;
             if($user){
                 $already_registered = true;
@@ -158,7 +158,7 @@ class AuthController extends Controller
                     $user = User::where('apple_id', $request->social_id)->first();
                 }
             }
-            if($user && $user->is_deleted) throw new Exception('Your account has been deleted', 403);
+            
 
             if(!$user) return response()->json(['user' => null], 200);
             // delete and create new token and set up last login at
@@ -475,8 +475,7 @@ class AuthController extends Controller
     {
         try {
             $user = Auth::user();
-            $user->is_deleted = true;
-            $user->save();
+            $user->delete();
             return response()->json(['message' => 'Account deleted successfully'], 200);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
