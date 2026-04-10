@@ -93,7 +93,8 @@ class AuthController extends Controller
                 $user = User::where('facebook_id', $request->facebook_id)->orWhere('email', $request->email)->first();
             }
 
-
+            if($user && $user->is_deleted) throw new Exception('Your account has been deleted', 403);
+            
             $already_registered = false;
             if($user){
                 $already_registered = true;
@@ -157,6 +158,7 @@ class AuthController extends Controller
                     $user = User::where('apple_id', $request->social_id)->first();
                 }
             }
+            if($user && $user->is_deleted) throw new Exception('Your account has been deleted', 403);
 
             if(!$user) return response()->json(['user' => null], 200);
             // delete and create new token and set up last login at
@@ -221,6 +223,7 @@ class AuthController extends Controller
 
             DB::beginTransaction();
             $user = User::where('email', $request->email)->first();
+            if($user->is_deleted) throw new Exception('Your account has been deleted', 403);
             if($user->email_verified_at == null) throw new Exception('Email not verified', 400);
             if (!Hash::check($request->password, $user->password)) throw new Exception('Invalid email address or password', 400);
             $user->tokens()->delete();
@@ -466,6 +469,18 @@ class AuthController extends Controller
         $service = new AppStoreConnectAuth();
         $jwt = $service->generateToken();
         return response()->json($jwt);
+    }
+
+    public function deleteAccount(Request $request): JsonResponse
+    {
+        try {
+            $user = Auth::user();
+            $user->is_deleted = true;
+            $user->save();
+            return response()->json(['message' => 'Account deleted successfully'], 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
 }
