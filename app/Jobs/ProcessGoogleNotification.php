@@ -276,21 +276,21 @@ class ProcessGoogleNotification implements ShouldQueue
 
         switch ((int)$type) {
             case 4: // SUBSCRIPTION_PURCHASED (New subscription) insert new subscription but first check if already exists
-                $existingSubscription = Subscription::where('user_id', $data['obfuscatedExternalAccountId'])
-                    ->where('platform', 'google')
-                    ->where('plan', $productId)
-                    ->first();
-                if(!$existingSubscription && $plan){
-                    // Create new subscription
-                    $newSubscription = Subscription::create([
-                        'user_id'           => $data['obfuscatedExternalAccountId'],
-                        'plan'              => $productId,
-                        'expires_at'        => $data['expiry'],
-                        'renewal_period'    => $plan['duration'],
-                        'platform'          => 'google',
-                        'status'            => 'active',
-                    ]);
-                }
+                // $existingSubscription = Subscription::where('user_id', $data['obfuscatedExternalAccountId'])
+                //     ->where('platform', 'google')
+                //     ->where('plan', $productId)
+                //     ->first();
+                // if(!$existingSubscription && $plan){
+                //     // Create new subscription
+                //     $newSubscription = Subscription::create([
+                //         'user_id'           => $data['obfuscatedExternalAccountId'],
+                //         'plan'              => $productId,
+                //         'expires_at'        => $data['expiry'],
+                //         'renewal_period'    => $plan['duration'],
+                //         'platform'          => 'google',
+                //         'status'            => 'active',
+                //     ]);
+                // }
                 break;
             case 2: // SUBSCRIPTION_RENEWED
                 $subscription = Subscription::where('user_id', $data['obfuscatedExternalAccountId'])->where('platform', 'google')->first();
