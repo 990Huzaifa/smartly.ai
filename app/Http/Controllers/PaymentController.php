@@ -100,8 +100,8 @@ class PaymentController extends Controller
             
             // firestore update start here
             $this->firebase->updateUserPlan($user->id, $productId,[
-                'basic_tokens' => $plan['basic_tokens'],
-                'advanced_tokens' => $plan['advanced_tokens'],
+                'remainingBasicTokens' => $plan['basic_tokens'],
+                'remainingAdvancedTokens' => $plan['advanced_tokens'],
             ]);
             // firestore update end here
             return response()->json(['message' => 'Payment verified successfully'], 200);
@@ -349,8 +349,8 @@ class PaymentController extends Controller
 
             // firestore update start here
             $this->firebase->updateUserPlan($user->id, $productId,[
-                'basic_tokens' => $plan['basic_tokens'],
-                'advanced_tokens' => $plan['advanced_tokens'],
+                'remainingBasicTokens' => $plan['basic_tokens'],
+                'remainingAdvancedTokens' => $plan['advanced_tokens'],
             ]);
             // firestore update end here
             return response()->json(['message' => 'Payment verified successfully', 'user' => $user], 200);

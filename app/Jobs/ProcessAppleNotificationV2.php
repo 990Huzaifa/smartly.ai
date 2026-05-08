@@ -78,8 +78,8 @@ class ProcessAppleNotificationV2 implements ShouldQueue
 
                 // firestore update start here
                 $this->firebase->updateUserPlan($subscription->user_id, $productId,[
-                    'basic_tokens' => $plan['basic_tokens'],
-                    'advanced_tokens' => $plan['advanced_tokens'],
+                    'remainingBasicTokens' => $plan['basic_tokens'],
+                    'remainingAdvancedTokens' => $plan['advanced_tokens'],
                 ]);
                 // firestore update end here
             }
@@ -94,8 +94,8 @@ class ProcessAppleNotificationV2 implements ShouldQueue
 
                 // firestore update start here
                 $this->firebase->updateUserPlan($subscription->user_id, "Free",[
-                    'basic_tokens' => 0,
-                    'advanced_tokens' => 0,
+                    'remainingBasicTokens' => 0,
+                    'remainingAdvancedTokens' => 0,
                 ]);
                 // firestore update end here
             }
