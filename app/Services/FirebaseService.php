@@ -5,9 +5,9 @@ namespace App\Services;
 use App\Models\User;
 use Kreait\Firebase\Factory;
 use Google\Cloud\Core\Timestamp;
+use Google\Cloud\Firestore\FirestoreClient;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
-use Google\Cloud\Firestore\FirestoreClient;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -21,11 +21,44 @@ class FirebaseService
 
     public function __construct()
     {
-        // Initialize Firebase
+        $credentialsPath = storage_path('app/firebase/user-firebase-credentials.json');
+
+        if (!is_readable($credentialsPath)) {
+            throw new \RuntimeException("Firebase credentials file not readable: {$credentialsPath}");
+        }
+
+        $serviceAccount = json_decode(file_get_contents($credentialsPath), true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \RuntimeException('Invalid Firebase credentials JSON: ' . json_last_error_msg());
+        }
+
+        $projectId = $serviceAccount['project_id'] ?? null;
+
+        if (!$projectId) {
+            throw new \RuntimeException('Firebase project_id missing in service account JSON.');
+        }
+
+        /*
+        * Important:
+        * Some Google Cloud clients still check Application Default Credentials.
+        * So we set it manually at runtime too.
+        */
+        putenv("GOOGLE_APPLICATION_CREDENTIALS={$credentialsPath}");
+        $_ENV['GOOGLE_APPLICATION_CREDENTIALS'] = $credentialsPath;
+        $_SERVER['GOOGLE_APPLICATION_CREDENTIALS'] = $credentialsPath;
+
+        // FCM Messaging
         $userFactory = (new Factory)
-            ->withServiceAccount(storage_path('app/firebase/user-firebase-credentials.json'));
+            ->withServiceAccount($credentialsPath);
+
         $this->userMessaging = $userFactory->createMessaging();
-        $this->firestore = $userFactory->createFirestore()->database();
+
+        // Firestore direct client
+        $this->firestore = new FirestoreClient([
+            'projectId' => $projectId,
+            'keyFilePath' => $credentialsPath,
+        ]);
     }
 
 
