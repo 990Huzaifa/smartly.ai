@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Services\FirebaseService;
 use App\Services\GoogleAuthService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -21,6 +22,10 @@ use App\Services\AppStoreConnectAuth;
 
 class PaymentController extends Controller
 {
+    protected $firebase;
+    public function __construct(FirebaseService $firebaseService) {
+        $this->firebase = $firebaseService;
+    }
     public function verifyapple(Request $request): JsonResponse
     {
         try{
@@ -335,6 +340,10 @@ class PaymentController extends Controller
                     ]);
                 });
             }
+
+            // firestore update start here
+            $this->firebase->updateUserPlan($user, $productId);
+            // firestore update end here
             return response()->json(['message' => 'Payment verified successfully', 'user' => $user], 200);
         }catch(QueryException $e){
             return response()->json(['error' => $e->getMessage()], 500);
