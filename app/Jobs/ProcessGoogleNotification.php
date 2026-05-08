@@ -331,7 +331,7 @@ class ProcessGoogleNotification implements ShouldQueue
 
                     // firestore update start here
                     $firebase->updateUserPlan($subscription->user_id, "Free",[
-                        'remainingBasicTokens' => 0,
+                        'remainingBasicTokens' => 30,
                         'remainingAdvancedTokens' => 0,
                     ]);
                     // firestore update end here
