@@ -86,7 +86,7 @@ class ProcessAppleNotificationV2 implements ShouldQueue
                 ]);
 
                 // firestore update start here
-                $this->firebase->updateUserPlan($subscription->user_id, "BASIC");
+                $this->firebase->updateUserPlan($subscription->user_id, "Free");
                 // firestore update end here
             }
             // Log::error('App Store V2 Notification Job Done. Subscription not found.'); 

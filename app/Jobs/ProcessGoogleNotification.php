@@ -325,7 +325,7 @@ class ProcessGoogleNotification implements ShouldQueue
                     ]);
 
                     // firestore update start here
-                    $this->firebase->updateUserPlan($subscription->user_id, "BASIC");
+                    $this->firebase->updateUserPlan($subscription->user_id, "Free");
                     // firestore update end here
 
                 }
