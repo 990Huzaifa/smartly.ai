@@ -109,9 +109,9 @@ class ProcessGoogleNotification implements ShouldQueue
         // ============================
         
         $planConfig = [
-            'starter-plans'      => ['duration' => 'monthly'],
-            'pro-plans'       => ['duration' => 'monthly'],
-            'ultra-plans'  => ['duration' => 'monthly'],
+            'starter-plans'      => ['duration' => 'monthly', 'basic_tokens' => 3600, 'advanced_tokens' => 200],
+            'pro-plans'       => ['duration' => 'monthly', 'basic_tokens' => 10000, 'advanced_tokens' => 1000],
+            'ultra-plans'  => ['duration' => 'monthly', 'basic_tokens' => 10000, 'advanced_tokens' => 5000],
         ];
 
         $plan = $planConfig[$productId] ?? null;
@@ -306,6 +306,13 @@ class ProcessGoogleNotification implements ShouldQueue
                         'status'            => 'active',
                         'canceled_at'      => null,
                     ]);
+
+                    // firestore update start here
+                    $this->firebase->updateUserPlan($subscription->user_id, $productId,[
+                        'basic_tokens' => $plan['basic_tokens'],
+                        'advanced_tokens' => $plan['advanced_tokens'],
+                    ]);
+                    // firestore update end here
                 }
                 break;
             case 3: // SUBSCRIPTION_CANCELED
@@ -325,7 +332,10 @@ class ProcessGoogleNotification implements ShouldQueue
                     ]);
 
                     // firestore update start here
-                    $this->firebase->updateUserPlan($subscription->user_id, "Free");
+                    $this->firebase->updateUserPlan($subscription->user_id, "Free",[
+                        'basic_tokens' => 0,
+                        'advanced_tokens' => 0,
+                    ]);
                     // firestore update end here
 
                 }

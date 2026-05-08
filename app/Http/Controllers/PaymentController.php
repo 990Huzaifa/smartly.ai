@@ -61,9 +61,9 @@ class PaymentController extends Controller
             // 🎯 PLAN MAPPING
             // ============================
             $planConfig = [
-                'starter_plans'      => ['duration' => 'monthly'],
-                'pro_plans'       => ['duration' => 'monthly'],
-                'ultra_plans'  => ['duration' => 'monthly'],
+                'starter_plans'      => ['duration' => 'monthly', 'basic_tokens' => 3600, 'advanced_tokens' => 200],
+                'pro_plans'       => ['duration' => 'monthly', 'basic_tokens' => 10000, 'advanced_tokens' => 1000],
+                'ultra_plans'  => ['duration' => 'monthly', 'basic_tokens' => 10000, 'advanced_tokens' => 5000],
             ];
 
             $productId = $latestReceipt['productId'];
@@ -99,7 +99,10 @@ class PaymentController extends Controller
             }
             
             // firestore update start here
-            $this->firebase->updateUserPlan($user->id, $productId);
+            $this->firebase->updateUserPlan($user->id, $productId,[
+                'basic_tokens' => $plan['basic_tokens'],
+                'advanced_tokens' => $plan['advanced_tokens'],
+            ]);
             // firestore update end here
             return response()->json(['message' => 'Payment verified successfully'], 200);
         }catch(QueryException $e){
@@ -280,9 +283,9 @@ class PaymentController extends Controller
 
 
             $planConfig = [
-                'pro-plans'       => ['duration' => 'monthly'],
-                'starter-plans'      => ['duration' => 'monthly'],
-                'ultra-plans'  => ['duration' => 'monthly'],
+                'starter-plans'      => ['duration' => 'monthly', 'basic_tokens' => 3600, 'advanced_tokens' => 200],
+                'pro-plans'       => ['duration' => 'monthly', 'basic_tokens' => 10000, 'advanced_tokens' => 1000],
+                'ultra-plans'  => ['duration' => 'monthly', 'basic_tokens' => 10000, 'advanced_tokens' => 5000],
             ];
 
             
@@ -345,7 +348,10 @@ class PaymentController extends Controller
             }
 
             // firestore update start here
-            $this->firebase->updateUserPlan($user->id, $productId);
+            $this->firebase->updateUserPlan($user->id, $productId,[
+                'basic_tokens' => $plan['basic_tokens'],
+                'advanced_tokens' => $plan['advanced_tokens'],
+            ]);
             // firestore update end here
             return response()->json(['message' => 'Payment verified successfully', 'user' => $user], 200);
         }catch(QueryException $e){

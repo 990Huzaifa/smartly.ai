@@ -50,10 +50,10 @@ class ProcessAppleNotificationV2 implements ShouldQueue
         // update logic here
 
         $planConfig = [
-                'starter_plans'      => ['duration' => 'monthly'],
-                'pro_plans'       => ['duration' => 'monthly'],
-                'ultra_plans'  => ['duration' => 'monthly'],
-            ];
+            'starter_plans'      => ['duration' => 'monthly', 'basic_tokens' => 3600, 'advanced_tokens' => 200],
+            'pro_plans'       => ['duration' => 'monthly', 'basic_tokens' => 10000, 'advanced_tokens' => 1000],
+            'ultra_plans'  => ['duration' => 'monthly', 'basic_tokens' => 10000, 'advanced_tokens' => 5000],
+        ];
 
         $productId = $decodedTransactionInfo['productId'];
         $plan = $planConfig[$productId] ?? null;
@@ -75,6 +75,13 @@ class ProcessAppleNotificationV2 implements ShouldQueue
                     'status'            => 'active',
                     'canceled_at'      => null,
                 ]);
+
+                // firestore update start here
+                $this->firebase->updateUserPlan($subscription->user_id, $productId,[
+                    'basic_tokens' => $plan['basic_tokens'],
+                    'advanced_tokens' => $plan['advanced_tokens'],
+                ]);
+                // firestore update end here
             }
             
         }
@@ -86,7 +93,10 @@ class ProcessAppleNotificationV2 implements ShouldQueue
                 ]);
 
                 // firestore update start here
-                $this->firebase->updateUserPlan($subscription->user_id, "Free");
+                $this->firebase->updateUserPlan($subscription->user_id, "Free",[
+                    'basic_tokens' => 0,
+                    'advanced_tokens' => 0,
+                ]);
                 // firestore update end here
             }
             // Log::error('App Store V2 Notification Job Done. Subscription not found.'); 
