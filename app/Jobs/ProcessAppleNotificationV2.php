@@ -21,7 +21,6 @@ class ProcessAppleNotificationV2 implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $signedPayload;
-    protected FirebaseService $firebase;
     /**
      * Create a new job instance.
      */
@@ -64,6 +63,7 @@ class ProcessAppleNotificationV2 implements ShouldQueue
 
     private function subscription($notificationType, $subtype, $decodedTransactionInfo, $productId, $plan)
     {
+        $firebase = new FirebaseService();
         if($notificationType == "DID_RENEW"){
             $subscription = Subscription::where('transaction_id', $decodedTransactionInfo['originalTransactionId'])->where('platform', 'apple')->first();
             if($subscription){
@@ -75,7 +75,7 @@ class ProcessAppleNotificationV2 implements ShouldQueue
                 ]);
 
                 // firestore update start here
-                $this->firebase->updateUserPlan($subscription->user_id, $productId,[
+                $firebase->updateUserPlan($subscription->user_id, $productId,[
                     'remainingBasicTokens' => $plan['basic_tokens'],
                     'remainingAdvancedTokens' => $plan['advanced_tokens'],
                 ]);
@@ -91,7 +91,7 @@ class ProcessAppleNotificationV2 implements ShouldQueue
                 ]);
 
                 // firestore update start here
-                $this->firebase->updateUserPlan($subscription->user_id, "Free",[
+                $firebase->updateUserPlan($subscription->user_id, "Free",[
                     'remainingBasicTokens' => 0,
                     'remainingAdvancedTokens' => 0,
                 ]);

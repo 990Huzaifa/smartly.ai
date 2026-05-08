@@ -24,7 +24,6 @@ class ProcessGoogleNotification implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $base64Data;
-    protected FirebaseService $firebase;
 
     public function __construct(string $base64Data)
     {
@@ -276,7 +275,7 @@ class ProcessGoogleNotification implements ShouldQueue
 
     public function subscription($type, $data, $productId, $plan){
         // credit based plan handling logic
-
+        $firebase = new FirebaseService();
         switch ((int)$type) {
             case 4: // SUBSCRIPTION_PURCHASED (New subscription) insert new subscription but first check if already exists
                 // $existingSubscription = Subscription::where('user_id', $data['obfuscatedExternalAccountId'])
@@ -307,7 +306,7 @@ class ProcessGoogleNotification implements ShouldQueue
                     ]);
 
                     // firestore update start here
-                    $this->firebase->updateUserPlan($subscription->user_id, $productId,[
+                    $firebase->updateUserPlan($subscription->user_id, $productId,[
                         'remainingBasicTokens' => $plan['basic_tokens'],
                         'remainingAdvancedTokens' => $plan['advanced_tokens'],
                     ]);
@@ -331,7 +330,7 @@ class ProcessGoogleNotification implements ShouldQueue
                     ]);
 
                     // firestore update start here
-                    $this->firebase->updateUserPlan($subscription->user_id, "Free",[
+                    $firebase->updateUserPlan($subscription->user_id, "Free",[
                         'remainingBasicTokens' => 0,
                         'remainingAdvancedTokens' => 0,
                     ]);
