@@ -7,6 +7,7 @@ use App\Models\CreditsWallet;
 use App\Models\Premium;
 use App\Models\Subscription;
 use App\Models\User;
+use App\Services\FirebaseService;
 use App\Services\GoogleAuthService;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
@@ -23,10 +24,13 @@ class ProcessGoogleNotification implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $base64Data;
+    protected $firebase;
 
-    public function __construct(string $base64Data)
+    public function __construct(string $base64Data, FirebaseService $firebase)
     {
         $this->base64Data = $base64Data;
+        $this->firebase = $firebase;
+
     }
 
     /**
@@ -311,6 +315,7 @@ class ProcessGoogleNotification implements ShouldQueue
                         'canceled_at' => Carbon::now(),
                     ]);
                 }
+
                 break;
             case 13: // SUBSCRIPTION_EXPIRED
                 $subscription = Subscription::where('user_id', $data['obfuscatedExternalAccountId'])->where('plan',$productId)->where('platform', 'google')->first();
@@ -318,6 +323,10 @@ class ProcessGoogleNotification implements ShouldQueue
                     $subscription->update([
                         'status' => 'expired',
                     ]);
+
+                    // firestore update start here
+                    $this->firebase->updateUserPlan($subscription->user_id, "BASIC");
+                    // firestore update end here
 
                 }
                 break;

@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Services\AppStoreConnectAuth;
+use App\Services\FirebaseService;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -20,12 +21,15 @@ class ProcessAppleNotificationV2 implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $signedPayload;
+    protected $firebase;
     /**
      * Create a new job instance.
      */
-    public function __construct($signedPayload)
+    public function __construct($signedPayload, FirebaseService $firebase)
     {
         $this->signedPayload = $signedPayload;
+        $this->firebase = $firebase;
+
     }
 
     /**
@@ -80,6 +84,10 @@ class ProcessAppleNotificationV2 implements ShouldQueue
                 $subscription->update([
                     'status' => 'expired',
                 ]);
+
+                // firestore update start here
+                $this->firebase->updateUserPlan($subscription->user_id, "BASIC");
+                // firestore update end here
             }
             // Log::error('App Store V2 Notification Job Done. Subscription not found.'); 
         }

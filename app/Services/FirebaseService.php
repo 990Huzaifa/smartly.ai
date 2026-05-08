@@ -140,9 +140,9 @@ class FirebaseService
         }
     }
 
-    public function updateUserPlan(User $user, string $plan, array $extraData = []): bool
+    public function updateUserPlan($userId, string $plan, array $extraData = []): bool
     {
-        if (empty($user->id)) {
+        if (empty($userId)) {
             Log::warning('Firestore plan update skipped: user id missing.');
 
             return false;
@@ -161,7 +161,7 @@ class FirebaseService
              */
             $documents = $this->firestore
                 ->collection($this->usersCollection)
-                ->where('user_id', '=', (int) $user->id)
+                ->where('user_id', '=', (int) $userId)
                 ->limit(1)
                 ->documents();
 
@@ -182,7 +182,7 @@ class FirebaseService
                 $found = true;
 
                 Log::info('Firestore user plan updated successfully.', [
-                    'db_user_id' => $user->id,
+                    'db_user_id' => $userId,
                     'firestore_document_id' => $document->id(),
                     'plan' => $plan,
                 ]);
@@ -192,7 +192,7 @@ class FirebaseService
 
             if (!$found) {
                 Log::warning('Firestore user not found by user_id.', [
-                    'db_user_id' => $user->id,
+                    'db_user_id' => $userId,
                     'plan' => $plan,
                 ]);
 
@@ -202,7 +202,7 @@ class FirebaseService
             return true;
         } catch (Throwable $e) {
             Log::error('Firestore user plan update failed.', [
-                'db_user_id' => $user->id,
+                'db_user_id' => $userId,
                 'plan' => $plan,
                 'error' => $e->getMessage(),
             ]);

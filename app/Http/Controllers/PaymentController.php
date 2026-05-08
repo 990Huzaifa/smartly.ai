@@ -97,7 +97,10 @@ class PaymentController extends Controller
                     ]);
                 });
             }
-
+            
+            // firestore update start here
+            $this->firebase->updateUserPlan($user->id, $productId);
+            // firestore update end here
             return response()->json(['message' => 'Payment verified successfully'], 200);
         }catch(QueryException $e){
             return response()->json(['error' => $e->getMessage()], 500);
@@ -342,7 +345,7 @@ class PaymentController extends Controller
             }
 
             // firestore update start here
-            $this->firebase->updateUserPlan($user, $productId);
+            $this->firebase->updateUserPlan($user->id, $productId);
             // firestore update end here
             return response()->json(['message' => 'Payment verified successfully', 'user' => $user], 200);
         }catch(QueryException $e){
