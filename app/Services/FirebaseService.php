@@ -109,10 +109,8 @@ class FirebaseService
 
     public function updateUserPlan(User $user, string $plan, array $extraData = []): bool
     {
-        if (empty($user->firebase_uid)) {
-            Log::warning('Firestore plan update skipped: firebase_uid missing.', [
-                'user_id' => $user->id,
-            ]);
+        if (empty($user->id)) {
+            Log::warning('Firestore plan update skipped: user id missing.');
 
             return false;
         }
@@ -120,22 +118,58 @@ class FirebaseService
         try {
             $payload = array_merge([
                 'subscriptionPlan' => $plan,
-                'planUpdatedAt' => $this->firestoreTimestamp(),
-                'updatedFrom' => 'laravel_backend',
             ], $extraData);
 
-            $this->firestore
+            /**
+             * Important:
+             * Firestore is type-sensitive.
+             * If user_id in Firestore is stored as number, use (int) $user->id.
+             * If user_id in Firestore is stored as string, use (string) $user->id.
+             */
+            $documents = $this->firestore
                 ->collection($this->usersCollection)
-                ->document($user->firebase_uid)
-                ->set($payload, [
-                    'merge' => true,
+                ->where('user_id', '=', (int) $user->id)
+                ->limit(1)
+                ->documents();
+
+            $found = false;
+
+            foreach ($documents as $document) {
+                if (!$document->exists()) {
+                    continue;
+                }
+
+                $this->firestore
+                    ->collection($this->usersCollection)
+                    ->document($document->id())
+                    ->set($payload, [
+                        'merge' => true,
+                    ]);
+
+                $found = true;
+
+                Log::info('Firestore user plan updated successfully.', [
+                    'db_user_id' => $user->id,
+                    'firestore_document_id' => $document->id(),
+                    'plan' => $plan,
                 ]);
+
+                break;
+            }
+
+            if (!$found) {
+                Log::warning('Firestore user not found by user_id.', [
+                    'db_user_id' => $user->id,
+                    'plan' => $plan,
+                ]);
+
+                return false;
+            }
 
             return true;
         } catch (Throwable $e) {
             Log::error('Firestore user plan update failed.', [
-                'user_id' => $user->id,
-                'firebase_uid' => $user->firebase_uid,
+                'db_user_id' => $user->id,
                 'plan' => $plan,
                 'error' => $e->getMessage(),
             ]);
