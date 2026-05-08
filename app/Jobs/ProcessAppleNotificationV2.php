@@ -21,15 +21,13 @@ class ProcessAppleNotificationV2 implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $signedPayload;
-    protected $firebase;
+    protected FirebaseService $firebase;
     /**
      * Create a new job instance.
      */
-    public function __construct($signedPayload, FirebaseService $firebase)
+    public function __construct($signedPayload)
     {
         $this->signedPayload = $signedPayload;
-        $this->firebase = $firebase;
-
     }
 
     /**

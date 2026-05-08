@@ -24,12 +24,11 @@ class ProcessGoogleNotification implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $base64Data;
-    protected $firebase;
+    protected FirebaseService $firebase;
 
-    public function __construct(string $base64Data, FirebaseService $firebase)
+    public function __construct(string $base64Data)
     {
         $this->base64Data = $base64Data;
-        $this->firebase = $firebase;
 
     }
 
