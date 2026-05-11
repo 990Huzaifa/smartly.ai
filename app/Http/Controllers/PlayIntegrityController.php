@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Services\PlayIntegrityService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PlayIntegrityController extends Controller
 {
@@ -17,6 +18,7 @@ class PlayIntegrityController extends Controller
         $result = $playIntegrityService->verifyAppRecognition(
             $request->integrity_token
         );
+        Log::info(json_encode($result)); 
 
         return response()->json([
             'success' => true,

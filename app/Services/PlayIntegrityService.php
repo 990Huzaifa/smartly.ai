@@ -24,7 +24,8 @@ class PlayIntegrityService
             }
 
             $client = new GoogleClient();
-            $client->setAuthConfig(config('play_integrity.service_account_path'));
+            $credentialsPath = storage_path('app/firebase/user-firebase-credentials.json');
+            $client->setAuthConfig($credentialsPath);
             $client->addScope('https://www.googleapis.com/auth/playintegrity');
 
             $service = new PlayIntegrity($client);

@@ -15,7 +15,7 @@ class GoogleAuthService
         // 1. JSON Key file ka path set karein.
         // Ise .env file mein rakhein aur config() se fetch karein.
         // Example: config('services.google.play_service_account_path')
-        $keyFilePath = storage_path('app/google/service-account.json'); // Apne path se replace karein
+        $keyFilePath = storage_path('app/firebase/user-firebase-credentials.json'); // Apne path se replace karein
 
         if (!file_exists($keyFilePath)) {
             // Log error: Key file not found
