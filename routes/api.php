@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PlayIntegrityController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\WebhookController;
@@ -41,6 +42,8 @@ Route::post('/webhook/apple', [WebhookController::class, 'handleApple']);
 Route::post('/webhook/google', [WebhookController::class, 'handleGoogle']);
 
 Route::get('request-jwt',[AuthController::class,'jwt']);
+
+Route::post('/play-integrity/verify', [PlayIntegrityController::class, 'verify']);
 
 Route::get('/test-google', [AuthController::class, 'testGAToken']);
 Route::middleware(['auth:sanctum'])->group(function () {
