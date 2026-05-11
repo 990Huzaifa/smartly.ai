@@ -243,7 +243,7 @@ class PaymentController extends Controller
             ])->get($url);
             // log full response
             // 4. Response check karein
-            Log::info("Google Verification Success: " . $response->body());
+            // Log::info("Google Verification Success: " . $response->body());
             if ($response->successful()) {
                 // Success! Response mein subscription details hain
                 return $response->json();
